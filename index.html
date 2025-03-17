@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>After School Fun</title>
+</head>
+<body>
+    <div id="app">
+        <!-- Top part -->
+        <header>
+            <h1>After School Fun</h1>
+            <p>Pick fun stuff for kids to do after school</p>
+            <button @click="showCartPage = !showCartPage">
+                {{ showCartPage ? 'See Activities' : 'See Cart' }} ({{ cart.length }})
+            </button>
+        </header>
+
+        <!-- Main page with activities -->
+        <div v-if="!showCartPage">
+            <div class="picker">
+                <select v-model="pickedType">
+                    <option value="">All Types</option>
+                    <option v-for="type in types" :value="type">{{ type }}</option>
+                </select>
+            </div>
+
+            <div class="activity-list">
+                <div v-for="activity in shownActivities" :key="activity.id" class="box">
+                    <h2>{{ activity.name }}</h2>
+                    <p><strong>Type:</strong> {{ activity.type }}</p>
+                    <p><strong>Time:</strong> {{ activity.time }}</p>
+                    <p><strong>Day:</strong> {{ activity.day }}</p>
+                    <p><strong>Cost:</strong> ${{ activity.cost }}</p>
+                    <p>{{ activity.info }}</p>
+                    <button @click="addToCart(activity)">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart page -->
+        <div v-else>
+            <h2>Your Cart</h2>
+            <div v-if="cart.length === 0">
+                <p>Nothing in your cart yet</p>
+            </div>
+            <div v-else>
+                <div class="cart-list">
+                    <div v-for="item in cart" :key="item.id" class="cart-box">
+                        <h3>{{ item.name }}</h3>
+                        <p>${{ item.cost }}</p>
+                        <button @click="removeFromCart(item.id)">Take Out</button>
+                    </div>
+                </div>
+                <div class="cart-end">
+                    <p><strong>Total:</strong> ${{ cartTotal }}</p>
+                    <button @click="buyNow">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        // Activities in JSON format
+        const activitiesData = JSON.parse(`[
+            {"id": 1, "name": "Art Club", "type": "Creative", "time": "3:30-4:30 PM", "day": "Monday", "info": "Draw and paint fun stuff", "cost": 25},
+            {"id": 2, "name": "Soccer", "type": "Sports", "time": "4:00-5:00 PM", "day": "Tuesday", "info": "Kick balls and play with friends", "cost": 30},
+            {"id": 3, "name": "Coding", "type": "Tech", "time": "3:30-4:30 PM", "day": "Wednesday", "info": "Make computer games", "cost": 35},
+            {"id": 4, "name": "Music", "type": "Creative", "time": "4:00-5:00 PM", "day": "Thursday", "info": "Play cool instruments", "cost": 40},
+            {"id": 5, "name": "Basketball", "type": "Sports", "time": "3:30-4:30 PM", "day": "Friday", "info": "Shoot hoops and run", "cost": 30},
+            {"id": 6, "name": "Robots", "type": "Tech", "time": "4:00-5:00 PM", "day": "Monday", "info": "Build your own robot", "cost": 45},
+            {"id": 7, "name": "Drama", "type": "Creative", "time": "3:30-4:30 PM", "day": "Tuesday", "info": "Act in fun plays", "cost": 25},
+            {"id": 8, "name": "Swimming", "type": "Sports", "time": "4:00-5:00 PM", "day": "Wednesday", "info": "Learn to swim", "cost": 35},
+            {"id": 9, "name": "Digital Art", "type": "Tech", "time": "3:30-4:30 PM", "day": "Thursday", "info": "Draw on computers", "cost": 30},
+            {"id": 10, "name": "Dance", "type": "Creative", "time": "4:00-5:00 PM", "day": "Friday", "info": "Learn cool dance moves", "cost": 25}
+        ]`);
+
+        const { createApp } = Vue
+        createApp({
+            data() {
+                return {
+                    pickedType: '',
+                    showCartPage: false,
+                    cart: [],
+                    activities: activitiesData
+                }
+            },
+            computed: {
+                types() {
+                    return [...new Set(this.activities.map(item => item.type))]
+                },
+                shownActivities() {
+                    if (!this.pickedType) return this.activities
+                    return this.activities.filter(item => item.type === this.pickedType)
+                },
+                cartTotal() {
+                    return this.cart.reduce((sum, item) => sum + item.cost, 0)
+                }
+            },
+            methods: {
+                addToCart(activity) {
+                    if (!this.cart.some(item => item.id === activity.id)) {
+                        this.cart.push(activity)
+                    }
+                },
+                removeFromCart(id) {
+                    this.cart = this.cart.filter(item => item.id !== id)
+                },
+                buyNow() {
+                    if (this.cart.length > 0) {
+                        alert(`Thanks for buying! You paid $${this.cartTotal}`)
+                        this.cart = []
+                        this.showCartPage = false
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+
+    <style>
+        body {
+            background: #f0f4f8;
+            font-family: Arial;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2em;
+        }
+
+        header p {
+            font-size: 1.1em;
+        }
+
+        header button {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f39c12;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .picker {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .activity-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .box h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .box p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .box button {
+            background: #4a90e2;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .cart-list {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .cart-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-box h3 {
+            color: #2c3e50;
+        }
+
+        .cart-box button {
+            background: #e74c3c;
+            padding: 5px 10px;
+            width: auto;
+        }
+
+        .cart-end {
+            text-align: right;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .cart-end p {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .cart-end button {
+            background: #50c878;
+            padding: 10px 20px;
+            width: auto;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</body>
+</html>

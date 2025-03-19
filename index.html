@@ -7,7 +7,6 @@
 </head>
 <body>
     <div id="app">
-        <!-- Top part -->
         <header>
             <h1>After School Fun</h1>
             <p>Pick fun stuff for kids to do after school</p>
@@ -16,7 +15,6 @@
             </button>
         </header>
 
-        <!-- Main page with activities -->
         <div v-if="!showCartPage">
             <div class="picker">
                 <select v-model="pickedType">
@@ -32,13 +30,13 @@
                     <p><strong>Time:</strong> {{ activity.time }}</p>
                     <p><strong>Day:</strong> {{ activity.day }}</p>
                     <p><strong>Cost:</strong> ${{ activity.cost }}</p>
+                    <p>available inventory: {{activity.availableinventory}}</p>
                     <p>{{ activity.info }}</p>
                     <button @click="addToCart(activity)">Add to Cart</button>
                 </div>
             </div>
         </div>
 
-        <!-- Cart page -->
         <div v-else>
             <h2>Your Cart</h2>
             <div v-if="cart.length === 0">
@@ -62,28 +60,107 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-        // Activities in JSON format
-        const activitiesData = JSON.parse(`[
-            {"id": 1, "name": "Art Club", "type": "Creative", "time": "3:30-4:30 PM", "day": "Monday", "info": "Draw and paint fun stuff", "cost": 25},
-            {"id": 2, "name": "Soccer", "type": "Sports", "time": "4:00-5:00 PM", "day": "Tuesday", "info": "Kick balls and play with friends", "cost": 30},
-            {"id": 3, "name": "Coding", "type": "Tech", "time": "3:30-4:30 PM", "day": "Wednesday", "info": "Make computer games", "cost": 35},
-            {"id": 4, "name": "Music", "type": "Creative", "time": "4:00-5:00 PM", "day": "Thursday", "info": "Play cool instruments", "cost": 40},
-            {"id": 5, "name": "Basketball", "type": "Sports", "time": "3:30-4:30 PM", "day": "Friday", "info": "Shoot hoops and run", "cost": 30},
-            {"id": 6, "name": "Robots", "type": "Tech", "time": "4:00-5:00 PM", "day": "Monday", "info": "Build your own robot", "cost": 45},
-            {"id": 7, "name": "Drama", "type": "Creative", "time": "3:30-4:30 PM", "day": "Tuesday", "info": "Act in fun plays", "cost": 25},
-            {"id": 8, "name": "Swimming", "type": "Sports", "time": "4:00-5:00 PM", "day": "Wednesday", "info": "Learn to swim", "cost": 35},
-            {"id": 9, "name": "Digital Art", "type": "Tech", "time": "3:30-4:30 PM", "day": "Thursday", "info": "Draw on computers", "cost": 30},
-            {"id": 10, "name": "Dance", "type": "Creative", "time": "4:00-5:00 PM", "day": "Friday", "info": "Learn cool dance moves", "cost": 25}
-        ]`);
-
         const { createApp } = Vue
+
         createApp({
             data() {
                 return {
                     pickedType: '',
                     showCartPage: false,
                     cart: [],
-                    activities: activitiesData
+                    activities: [
+                        {
+                            id: 1,
+                            name: 'Art Club',
+                            type: 'Creative',
+                            time: '3:30-4:30 PM',
+                            day: 'Monday',
+                            info: 'Draw and paint fun stuff',
+                            cost: 100,
+                            availableinventory:5
+                        },
+                        {
+                            id: 2,
+                            name: 'Soccer',
+                            type: 'Sports',
+                            time: '4:00-5:00 PM',
+                            day: 'Tuesday',
+                            info: 'Kick balls and play with friends',
+                            cost: 30,
+                            availableinventory:20
+                        },
+                        {
+                            id: 3,
+                            name: 'Coding',
+                            type: 'Tech',
+                            time: '3:30-4:30 PM',
+                            day: 'Wednesday',
+                            info: 'Make computer games',
+                            cost: 35,
+                            availableinventory:10
+
+                        },
+                        {
+                            id: 4,
+                            name: 'Music',
+                            type: 'Creative',
+                            time: '4:00-5:00 PM',
+                            day: 'Thursday',
+                            info: 'Play cool instruments',
+                            cost: 40,
+                            availableinventory:5
+                        },
+                        {
+                            id: 5,
+                            name: 'Basketball',
+                            type: 'Sports',
+                            time: '3:30-4:30 PM',
+                            day: 'Friday',
+                            info: 'Shoot hoops and run',
+                            cost: 30,
+                            availableinventory:15
+                        },
+                        {
+                            id: 6,
+                            name: 'Drama',
+                            type: 'Creative',
+                            time: '3:30-4:30 PM',
+                            day: 'Tuesday',
+                            info: 'Act in fun plays',
+                            cost: 25,
+                            availableinventory:10
+                        },
+                        {
+                            id: 7,
+                            name: 'Swimming',
+                            type: 'Sports',
+                            time: '4:00-5:00 PM',
+                            day: 'Wednesday',
+                            info: 'Learn to swim',
+                            cost: 35,
+                            availableinventory:20
+                        },
+                        {
+                            id: 8,
+                            name: 'Digital Art',
+                            type: 'Tech',
+                            time: '3:30-4:30 PM',
+                            day: 'Thursday',
+                            info: 'Draw on computers',
+                            cost: 30,
+                            availableinventory:10
+                        },
+                        {
+                            id: 9,
+                            name: 'Dance',
+                            type: 'Creative',
+                            time: '4:00-5:00 PM',
+                            day: 'Friday',
+                            info: 'Learn cool dance moves',
+                            cost: 25,
+                            availableinventory:10
+                        }
+                    ]
                 }
             },
             computed: {
@@ -96,16 +173,34 @@
                 },
                 cartTotal() {
                     return this.cart.reduce((sum, item) => sum + item.cost, 0)
-                }
+                },
+                
+                cartitemcount:function(){
+                return this.cart.length||"";
+            },
+            canaddtocart:function(){
+                return this.activity.availableinventory>this.cartitemcount;
+            },
             },
             methods: {
                 addToCart(activity) {
-                    if (!this.cart.some(item => item.id === activity.id)) {
-                        this.cart.push(activity)
-                    }
-                },
+                    if (activity.availableinventory > 0) {
+                    this.cart.push(activity)
+                    activity.availableinventory--
+                }
+                }
+                ,
                 removeFromCart(id) {
-                    this.cart = this.cart.filter(item => item.id !== id)
+    const index = this.cart.findIndex(item => item.id === id)
+    if (index !== -1) {
+        const removedItem = this.cart.splice(index, 1)[0]
+        const activity = this.activities.find(a => a.id === id)
+        if (activity) {
+            activity.availableinventory++
+        }
+    }
+
+                
                 },
                 buyNow() {
                     if (this.cart.length > 0) {

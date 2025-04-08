@@ -1,15 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>After School Fun</title>
 </head>
+
 <body>
     <div id="app">
         <header>
             <h1>After School Fun</h1>
             <p>Pick fun stuff for kids to do after school</p>
+
+
+            <div class="search-box border-2 flex">
+                <input type="search" v-model="searchQuery" @input="searchQuery" placeholder="Search Lessons & Locations" class="p-2 w-3xs"
+                    aria-label="Search Lessons and Locations" />
+            </div>
+
             <button @click="showCartPage = !showCartPage">
                 {{ showCartPage ? 'See Activities' : 'See Cart' }} ({{ cart.length }})
             </button>
@@ -26,10 +35,12 @@
             <div class="activity-list">
                 <div v-for="activity in shownActivities" :key="activity.id" class="box">
                     <h2>{{ activity.name }}</h2>
+                    <img :src=`http://localhost:3000/images/${activity.name}.png`>
                     <p><strong>Type:</strong> {{ activity.type }}</p>
                     <p><strong>Time:</strong> {{ activity.time }}</p>
                     <p><strong>Day:</strong> {{ activity.day }}</p>
                     <p><strong>Cost:</strong> ${{ activity.cost }}</p>
+                    <p><strong>location:</strong> {{ activity.location}}</p>
                     <p>available inventory: {{activity.availableinventory}}</p>
                     <p>{{ activity.info }}</p>
                     <button @click="addToCart(activity)">Add to Cart</button>
@@ -61,6 +72,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
         const { createApp } = Vue
+        let debounceTimer;
 
         createApp({
             data() {
@@ -68,6 +80,7 @@
                     pickedType: '',
                     showCartPage: false,
                     cart: [],
+                    searchQuery: '',
                     activities: [
                         {
                             id: 1,
@@ -78,7 +91,7 @@
                             info: 'Draw and paint fun stuff',
                             location: 'abu dhabi',
                             cost: 100,
-                            availableinventory:5
+                            availableinventory: 5
                         },
                         {
                             id: 2,
@@ -89,7 +102,7 @@
                             info: 'Kick balls and play with friends',
                             location: 'Abu Dhabi',
                             cost: 30,
-                            availableinventory:20
+                            availableinventory: 20
                         },
                         {
                             id: 3,
@@ -100,7 +113,7 @@
                             info: 'Make computer games',
                             location: 'abu dhabi',
                             cost: 35,
-                            availableinventory:10
+                            availableinventory: 10
 
                         },
                         {
@@ -112,7 +125,7 @@
                             info: 'Play cool instruments',
                             location: 'Dubai',
                             cost: 40,
-                            availableinventory:5
+                            availableinventory: 5
                         },
                         {
                             id: 5,
@@ -123,7 +136,7 @@
                             info: 'Shoot hoops and run',
                             location: 'Dubai',
                             cost: 30,
-                            availableinventory:15
+                            availableinventory: 15
                         },
                         {
                             id: 6,
@@ -134,7 +147,7 @@
                             info: 'Act in fun plays',
                             location: 'Dubai',
                             cost: 25,
-                            availableinventory:10
+                            availableinventory: 10
                         },
                         {
                             id: 7,
@@ -145,7 +158,7 @@
                             info: 'Learn to swim',
                             location: 'Dubai',
                             cost: 35,
-                            availableinventory:20
+                            availableinventory: 20
                         },
                         {
                             id: 8,
@@ -156,7 +169,7 @@
                             info: 'Draw on computers',
                             location: 'Dubai',
                             cost: 30,
-                            availableinventory:10
+                            availableinventory: 10
                         },
                         {
                             id: 9,
@@ -167,7 +180,7 @@
                             info: 'Learn cool dance moves',
                             location: 'Dubai',
                             cost: 25,
-                            availableinventory:10
+                            availableinventory: 10
                         }
                     ]
                 }
@@ -183,33 +196,34 @@
                 cartTotal() {
                     return this.cart.reduce((sum, item) => sum + item.cost, 0)
                 },
-                
-                cartitemcount:function(){
-                return this.cart.length||"";
+
+                cartitemcount: function () {
+                    return this.cart.length || "";
+                },
+                canaddtocart: function () {
+                    return this.activity.availableinventory > this.cartitemcount;
+                },
             },
-            canaddtocart:function(){
-                return this.activity.availableinventory>this.cartitemcount;
-            },
-            },
+          
             methods: {
                 addToCart(activity) {
                     if (activity.availableinventory > 0) {
-                    this.cart.push(activity)
-                    activity.availableinventory--
-                }
+                        this.cart.push(activity)
+                        activity.availableinventory--
+                    }
                 }
                 ,
                 removeFromCart(id) {
-    const index = this.cart.findIndex(item => item.id === id)
-    if (index !== -1) {
-        const removedItem = this.cart.splice(index, 1)[0]
-        const activity = this.activities.find(a => a.id === id)
-        if (activity) {
-            activity.availableinventory++
-        }
-    }
+                    const index = this.cart.findIndex(item => item.id === id)
+                    if (index !== -1) {
+                        const removedItem = this.cart.splice(index, 1)[0]
+                        const activity = this.activities.find(a => a.id === id)
+                        if (activity) {
+                            activity.availableinventory++
+                        }
+                    }
 
-                
+
                 },
                 buyNow() {
                     if (this.cart.length > 0) {
@@ -217,7 +231,43 @@
                         this.cart = []
                         this.showCartPage = false
                     }
-                }
+                },
+                searchQuery() {
+                    if (!this.searchQuery) {
+                            this.fetchLessons();
+                        } else {
+                            fetch(
+                                `http://localhost:3000/search?q=${encodeURIComponent(
+                                    this.searchQuery
+                                )}`
+                            )
+                                .then((res) => res.json())
+                                .then((data) => {
+                                    this.activities = data.map((lesson) => ({
+                                        ...lesson
+                                    }));
+                                })
+                                .catch((err) => {
+                                    console.error("Search error:", err);
+                                });
+
+                        }
+                },
+                async fetchLessons() {
+                    try {
+                        const response = await fetch(
+                            "http://localhost:3000/lessons"
+                        );
+                        if (!response.ok) throw new Error("Failed to fetch lessons");
+                        const data = await response.json();
+                        this.activities = data.map((lesson) => ({
+                            ...lesson
+                        }));
+                    } catch (error) {
+                        console.error("Error fetching lessons:", error);
+                    } finally {
+                    }
+                },
             }
         }).mount('#app')
     </script>
@@ -287,7 +337,7 @@
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .box h2 {
@@ -321,7 +371,7 @@
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .cart-box {
@@ -348,7 +398,7 @@
             padding: 20px;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .cart-end p {
@@ -368,4 +418,5 @@
         }
     </style>
 </body>
+
 </html>

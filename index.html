@@ -64,6 +64,23 @@
                 </div>
                 <div class="cart-end">
                     <p><strong>Total:</strong> ${{ cartTotal }}</p>
+
+                    <div class="checkout-form">
+                        <input 
+                            v-model="customerName" 
+                            type="text" 
+                            placeholder="Enter your name" 
+                            class="input-field" 
+                            required 
+                        />
+                        <input 
+                            v-model="customerMobile" 
+                            type="number" 
+                            placeholder="Enter your mobile number" 
+                            class="input-field" 
+                            required 
+                        />
+
                     <button @click="buyNow">Buy Now</button>
                 </div>
             </div>
@@ -82,6 +99,8 @@
                     showCartPage: false,
                     cart: [],
                     searchQuery: '',
+                    customerName: '',
+                    customerMobile: '',
                     activities: [
                         {
                             id: 1,
@@ -239,13 +258,20 @@
 
 
                 },
+                
+
                 buyNow() {
-                    if (this.cart.length > 0) {
-                        alert(`Thanks for buying! You paid $${this.cartTotal}`)
-                        this.cart = []
-                        this.showCartPage = false
+                    if (!this.customerName || !this.customerMobile) {
+                        alert('Please enter your name and mobile number.');
+                        return;
                     }
+                    alert(`Thank you, ${this.customerName}! Your total is $${this.cartTotal}. We'll call you at ${this.customerMobile}.`);
+                    this.cart = [];
+                    this.customerName = '';
+                    this.customerMobile = '';
+                    this.showCartPage = false;
                 },
+                
                 
                 performSearch() {
                     if (!this.searchQuery) {

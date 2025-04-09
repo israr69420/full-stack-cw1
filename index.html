@@ -15,7 +15,7 @@
 
 
             <div class="search-box border-2 flex">
-                <input type="search" v-model="searchQuery" @input="searchQuery" placeholder="Search Lessons & Locations" class="p-2 w-3xs"
+                <input type="search" v-model="searchQuery" @input="debouncedSearch" placeholder="Search Lessons & Locations" class="p-2 w-3xs"
                     aria-label="Search Lessons and Locations" />
             </div>
 
@@ -239,6 +239,17 @@
             },
           
             methods: {
+                debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                },
                 addToCart(activity) {
                     if (activity.availableinventory > 0) {
                         this.cart.push(activity)
@@ -309,8 +320,12 @@
                     } finally {
                     }
                 }
+                
+            },
+            created() {
+                this.debouncedSearch = this.debounce(this.performSearch, 300);
             }
-        
+            
         }).mount('#app')
     </script>
 

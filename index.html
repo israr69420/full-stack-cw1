@@ -15,8 +15,12 @@
 
 
             <div class="search-box border-2 flex">
-                <input type="search" v-model="searchQuery" @input="debouncedSearch" placeholder="Search Lessons & Locations" class="p-2 w-3xs"
-                    aria-label="Search Lessons and Locations" />
+                <input type="search" 
+                v-model="searchQuery"
+                @input="debouncedSearch" 
+                placeholder="Search Lessons & Locations" 
+                class="p-2 w-3xs"
+                aria-label="Search Lessons and Locations" />
             </div>
 
             <button @click="showCartPage = !showCartPage">
@@ -315,6 +319,7 @@
                         this.activities = data.map((lesson) => ({
                             ...lesson
                         }));
+                        this.filteredActivities = [...this.activities];
                     } catch (error) {
                         console.error("Error fetching lessons:", error);
                     } finally {
@@ -324,6 +329,7 @@
             },
             created() {
                 this.debouncedSearch = this.debounce(this.performSearch, 300);
+                this.fetchLessons();
             }
             
         }).mount('#app')
